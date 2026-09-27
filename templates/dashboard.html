@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · ParcelTrack{% endblock %}
+
+{% set stat_meta = {
+  "Booked":           ("s-booked",    "bi-journal-check"),
+  "In Transit":       ("s-transit",   "bi-truck"),
+  "Out for Delivery": ("s-delivery",  "bi-box-arrow-right"),
+  "Delivered":        ("s-delivered", "bi-house-check")
+} %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fade-up">
+  <div>
+    <h3 class="brand-font mb-0">Operations Dashboard</h3>
+    <p class="text-soft small mb-0">Live overview of all parcels in the network.</p>
+  </div>
+  <a href="{{ url_for('new_shipment') }}" class="btn btn-brand">
+    <i class="bi bi-plus-lg"></i> New Shipment
+  </a>
+</div>
+
+<div class="row g-3 mb-4 fade-up-2">
+  <div class="col-6 col-lg">
+    <div class="stat s-total">
+      <div class="stat-ico"><i class="bi bi-boxes"></i></div>
+      <div class="stat-num">{{ total }}</div>
+      <div class="stat-lbl">Total Parcels</div>
+    </div>
+  </div>
+  {% for status in STATUS_FLOW %}
+  <div class="col-6 col-lg">
+    <a href="{{ url_for('shipments', status=status) }}" class="stat {{ stat_meta[status][0] }}">
+      <div class="stat-ico"><i class="bi {{ stat_meta[status][1] }}"></i></div>
+      <div class="stat-num">{{ status_counts[status] }}</div>
+      <div class="stat-lbl">{{ status }}</div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card card-elevated fade-up-3">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <span><i class="bi bi-graph-up-arrow text-brand me-1"></i> Shipments Booked per Day</span>
+    <span class="chip chip-transit"><i class="bi bi-calendar-week"></i> Last {{ chart_labels|length }} days</span>
+  </div>
+  <div class="card-body p-4">
+    {% if chart_labels %}
+      <canvas id="perDayChart" height="90"></canvas>
+    {% else %}
+      <p class="text-center text-faint my-4">No shipment data yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  const labels = {{ chart_labels | tojson }};
+  const values = {{ chart_values | tojson }};
+  const el = document.getElementById('perDayChart');
+  if (el && labels.length) {
+    const ctx = el.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 260);
+    grad.addColorStop(0, 'rgba(79,70,229,.28)');
+    grad.addColorStop(1, 'rgba(79,70,229,0)');
+    // Pretty date labels
+    const pretty = labels.map(d => {
+      const dt = new Date(d + 'T00:00:00');
+      return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    });
+    new Chart(el, {
+      type: 'line',
+      data: {
+        labels: pretty,
+        datasets: [{
+          label: 'Shipments booked',
+          data: values,
+          borderColor: '#4f46e5',
+          backgroundColor: grad,
+          fill: true,
+          tension: .38,
+          borderWidth: 3,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#4f46e5',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0b1020', padding: 12, cornerRadius: 10,
+            titleFont: { weight: '700' }, displayColors: false
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0, color: '#98a2b3' },
+               grid: { color: 'rgba(16,24,40,.06)' }, border: { display: false } },
+          x: { ticks: { color: '#98a2b3' }, grid: { display: false }, border: { display: false } }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

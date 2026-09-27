@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ shipment.tracking_no }} · ParcelTrack{% endblock %}
+
+{% set chip_class = {
+  "Booked": "chip-booked", "In Transit": "chip-transit",
+  "Out for Delivery": "chip-delivery", "Delivered": "chip-delivered"
+} %}
+{% set step_icons = {
+  "Booked": "bi-journal-check", "In Transit": "bi-truck",
+  "Out for Delivery": "bi-box-arrow-right", "Delivered": "bi-house-check"
+} %}
+{% set cur_index = status_flow.index(shipment.status) %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="fade-up">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{{ url_for('shipments') }}" class="text-decoration-none">Shipments</a></li>
+    <li class="breadcrumb-item active">{{ shipment.tracking_no }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <div class="col-lg-7 fade-up">
+    <div class="card card-elevated mb-4">
+      <div class="card-body p-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+          <div>
+            <div class="text-soft small fw-semibold text-uppercase" style="letter-spacing:.05em;">Tracking number</div>
+            <h4 class="brand-font mb-1">{{ shipment.tracking_no }}</h4>
+            <div class="text-soft"><i class="bi bi-geo-alt-fill text-brand"></i>
+              {{ shipment.origin }} <i class="bi bi-arrow-right mx-1"></i> {{ shipment.destination }}</div>
+          </div>
+          <span class="chip {{ chip_class.get(shipment.status,'chip-booked') }} fs-6">
+            <i class="bi {{ step_icons[shipment.status] }}"></i> {{ shipment.status }}</span>
+        </div>
+
+        <div class="stepper mb-3">
+          {% for st in status_flow %}
+            {% set state = 'is-done' if loop.index0 < cur_index else ('is-current' if loop.index0 == cur_index else '') %}
+            <div class="step {{ state }}">
+              <div class="ring"><i class="bi {{ step_icons[st] }}"></i></div>
+              <span class="lbl">{{ st }}</span>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="row small text-soft pt-3 mt-2 border-top">
+          <div class="col-sm-6 mb-1"><i class="bi bi-person-up me-1"></i><strong>Sender:</strong> {{ shipment.sender }}</div>
+          <div class="col-sm-6 mb-1"><i class="bi bi-person-check me-1"></i><strong>Receiver:</strong> {{ shipment.receiver }}</div>
+          <div class="col-12 mb-1"><i class="bi bi-clock me-1"></i><strong>Created:</strong> {{ shipment.created_at.strftime('%b %d, %Y · %H:%M') }}</div>
+        </div>
+        <a href="{{ url_for('track', tracking_no=shipment.tracking_no) }}"
+           class="btn btn-sm btn-outline-soft mt-3" target="_blank">
+          <i class="bi bi-box-arrow-up-right"></i> View public tracking page</a>
+      </div>
+    </div>
+
+    <div class="card card-elevated">
+      <div class="card-header"><i class="bi bi-signpost-split-fill text-brand me-1"></i> Tracking History</div>
+      <div class="card-body p-4">
+        <ul class="timeline">
+          {% for event in shipment.timeline|reverse %}
+            <li class="{{ 'current' if loop.first else 'done' }}">
+              <span class="dot"></span>
+              <div class="d-flex flex-wrap justify-content-between">
+                <span class="t-status">{{ event.status }}</span>
+                <span class="text-faint small">{{ event.timestamp.strftime('%b %d, %Y · %H:%M') }}</span>
+              </div>
+              <div class="text-soft"><i class="bi bi-geo-alt"></i> {{ event.location }}</div>
+              {% if event.note %}<div class="small text-faint">{{ event.note }}</div>{% endif %}
+            </li>
+          {% else %}
+            <li><span class="dot"></span> No events yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5 fade-up-2">
+    <div class="card card-elevated" style="position:sticky; top:88px;">
+      <div class="card-header"><i class="bi bi-plus-circle-fill text-brand me-1"></i> Add Tracking Event</div>
+      <div class="card-body p-4">
+        <form method="post" action="{{ url_for('add_event', shipment_id=shipment.id) }}">
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select" required>
+              {% for status in STATUS_FLOW %}
+                <option value="{{ status }}" {{ 'selected' if status == shipment.status }}>{{ status }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Location</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="bi bi-geo-alt"></i></span>
+              <input type="text" name="location" class="form-control" placeholder="City, State" required>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Note <span class="text-faint fw-normal">(optional)</span></label>
+            <textarea name="note" class="form-control" rows="2" placeholder="e.g. Arrived at regional hub"></textarea>
+          </div>
+          <button class="btn btn-brand w-100" type="submit"><i class="bi bi-send"></i> Add Event</button>
+        </form>
+        <p class="text-faint small mb-0 mt-3"><i class="bi bi-info-circle"></i>
+          The shipment's current status updates to match the latest event.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

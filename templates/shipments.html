@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Shipments · ParcelTrack{% endblock %}
+
+{% set chip_class = {
+  "Booked": "chip-booked", "In Transit": "chip-transit",
+  "Out for Delivery": "chip-delivery", "Delivered": "chip-delivered"
+} %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 fade-up">
+  <div>
+    <h3 class="brand-font mb-0">Shipments</h3>
+    <p class="text-soft small mb-0">{{ shipments|length }} parcel{{ '' if shipments|length == 1 else 's' }}
+      {{ 'with status “' ~ status_filter ~ '”' if status_filter else 'in total' }}.</p>
+  </div>
+  <a href="{{ url_for('new_shipment') }}" class="btn btn-brand">
+    <i class="bi bi-plus-lg"></i> New Shipment
+  </a>
+</div>
+
+<div class="mb-3 d-flex flex-wrap gap-2 fade-up-2">
+  <a href="{{ url_for('shipments') }}" class="pill {{ 'active' if not status_filter }}">All</a>
+  {% for status in STATUS_FLOW %}
+    <a href="{{ url_for('shipments', status=status) }}"
+       class="pill {{ 'active' if status_filter == status }}">{{ status }}</a>
+  {% endfor %}
+</div>
+
+<div class="card card-elevated overflow-hidden fade-up-2">
+  <div class="table-responsive">
+    <table class="table table-premium align-middle">
+      <thead>
+        <tr>
+          <th>Tracking #</th>
+          <th>Sender</th>
+          <th>Receiver</th>
+          <th>Route</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in shipments %}
+        <tr>
+          <td><code>{{ s.tracking_no }}</code></td>
+          <td class="fw-semibold">{{ s.sender }}</td>
+          <td>{{ s.receiver }}</td>
+          <td class="small text-soft"><i class="bi bi-geo-alt"></i> {{ s.origin }}
+            <i class="bi bi-arrow-right mx-1"></i> {{ s.destination }}</td>
+          <td><span class="chip {{ chip_class.get(s.status,'chip-booked') }}">{{ s.status }}</span></td>
+          <td class="small text-soft">{{ s.created_at.strftime('%b %d, %Y') }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('shipment_detail', shipment_id=s.id) }}" class="btn btn-sm btn-outline-soft">
+              Manage <i class="bi bi-chevron-right"></i>
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-faint py-5">
+          <i class="bi bi-inbox fs-3 d-block mb-2"></i>No shipments found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

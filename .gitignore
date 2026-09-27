@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# SQLite database (auto-created + auto-seeded on first run — never commit it)
+*.db
+courier.db
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# NOTE: seed data ships as source (seed.py) and is intentionally NOT ignored.

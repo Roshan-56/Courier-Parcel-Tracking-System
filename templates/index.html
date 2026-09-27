@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Track a Parcel · ParcelTrack{% endblock %}
+
+{% set chip_class = {
+  "Booked": "chip-booked", "In Transit": "chip-transit",
+  "Out for Delivery": "chip-delivery", "Delivered": "chip-delivered"
+} %}
+{% set step_icons = {
+  "Booked": "bi-journal-check", "In Transit": "bi-truck",
+  "Out for Delivery": "bi-box-arrow-right", "Delivered": "bi-house-check"
+} %}
+
+{% block content %}
+<section class="hero p-4 p-md-5 mb-4 fade-up">
+  <div class="hero-inner" style="max-width: 640px;">
+    <span class="eyebrow"><i class="bi bi-lightning-charge-fill"></i> Real-time parcel tracking</span>
+    <h1 class="display-5 mt-3 mb-2">Where is my parcel?</h1>
+    <p class="lead mb-4">Enter your tracking number below to follow your package every step of the way — from booking to your doorstep.</p>
+    <form method="post" action="{{ url_for('index') }}" class="track-box d-flex align-items-center gap-2">
+      <span class="ps-2 text-white-50"><i class="bi bi-upc-scan fs-5"></i></span>
+      <input type="text" name="tracking_no" value="{{ tracking_no }}"
+             class="form-control" placeholder="e.g. CPX-1000DEMO" autocomplete="off" required>
+      <button class="btn btn-accent px-4" type="submit"><i class="bi bi-search"></i> Track</button>
+    </form>
+  </div>
+  <div class="parcel-float"><i class="bi bi-box-seam"></i></div>
+</section>
+
+{% if searched %}
+  {% if shipment %}
+  {% set cur_index = status_flow.index(shipment.status) %}
+  <div class="card card-elevated mb-4 fade-up-2">
+    <div class="card-body p-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+        <div>
+          <div class="text-soft small fw-semibold text-uppercase" style="letter-spacing:.05em;">Tracking number</div>
+          <h3 class="mb-1 brand-font">{{ shipment.tracking_no }}</h3>
+          <div class="text-soft"><i class="bi bi-geo-alt-fill text-brand"></i>
+            {{ shipment.origin }} <i class="bi bi-arrow-right mx-1"></i> {{ shipment.destination }}</div>
+        </div>
+        <span class="chip {{ chip_class.get(shipment.status,'chip-booked') }} fs-6">
+          <i class="bi {{ step_icons[shipment.status] }}"></i> {{ shipment.status }}
+        </span>
+      </div>
+
+      <!-- Journey stepper -->
+      <div class="stepper mb-2">
+        {% for st in status_flow %}
+          {% set state = 'is-done' if loop.index0 < cur_index else ('is-current' if loop.index0 == cur_index else '') %}
+          <div class="step {{ state }}">
+            <div class="ring"><i class="bi {{ step_icons[st] }}"></i></div>
+            <span class="lbl">{{ st }}</span>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="row text-soft small mt-4 pt-3 border-top">
+        <div class="col-sm-6 mb-1"><i class="bi bi-person-up me-1"></i><strong>From:</strong> {{ shipment.sender }}</div>
+        <div class="col-sm-6 mb-1"><i class="bi bi-person-check me-1"></i><strong>To:</strong> {{ shipment.receiver }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card card-elevated fade-up-3">
+    <div class="card-header"><i class="bi bi-signpost-split-fill text-brand me-1"></i> Tracking History</div>
+    <div class="card-body p-4">
+      <ul class="timeline">
+        {% for event in shipment.timeline|reverse %}
+          <li class="{{ 'current' if loop.first else 'done' }}">
+            <span class="dot"></span>
+            <div class="d-flex flex-wrap justify-content-between">
+              <span class="t-status">{{ event.status }}</span>
+              <span class="text-faint small">{{ event.timestamp.strftime('%b %d, %Y · %H:%M') }}</span>
+            </div>
+            <div class="text-soft"><i class="bi bi-geo-alt"></i> {{ event.location }}</div>
+            {% if event.note %}<div class="small text-faint">{{ event.note }}</div>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  {% else %}
+    <div class="alert alert-warning d-flex align-items-center fade-up-2">
+      <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+      <div>No shipment found for <strong>{{ tracking_no }}</strong>. Please check the number and try again.</div>
+    </div>
+  {% endif %}
+{% else %}
+  <div class="row g-3 fade-up-2">
+    <div class="col-md-4">
+      <div class="card card-hover h-100"><div class="card-body p-4">
+        <div class="stat-ico mb-2" style="width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:1.15rem;color:#fff;background:linear-gradient(135deg,#6366f1,#4f46e5);"><i class="bi bi-upc-scan"></i></div>
+        <h6 class="brand-font mb-1">Instant lookup</h6>
+        <p class="text-soft small mb-0">Enter any tracking number to see live status — no account required.</p>
+      </div></div>
+    </div>
+    <div class="col-md-4">
+      <div class="card card-hover h-100"><div class="card-body p-4">
+        <div class="stat-ico mb-2" style="width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:1.15rem;color:#b45309;background:rgba(245,158,11,.16);"><i class="bi bi-signpost-2"></i></div>
+        <h6 class="brand-font mb-1">Full journey timeline</h6>
+        <p class="text-soft small mb-0">Follow every scan from Booked to Delivered with dates and locations.</p>
+      </div></div>
+    </div>
+    <div class="col-md-4">
+      <div class="card card-hover h-100"><div class="card-body p-4">
+        <div class="stat-ico mb-2" style="width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:1.15rem;color:#047857;background:rgba(16,185,129,.14);"><i class="bi bi-clock-history"></i></div>
+        <h6 class="brand-font mb-1">Always up to date</h6>
+        <p class="text-soft small mb-0">Status refreshes as our team scans your parcel along the route.</p>
+      </div></div>
+    </div>
+  </div>
+  <p class="text-center text-faint small mt-4 mb-0">
+    Try a demo number: <code>CPX-1000DEMO</code> · <code>CPX-1007DEMO</code> · <code>CPX-1015DEMO</code>
+  </p>
+{% endif %}
+{% endblock %}

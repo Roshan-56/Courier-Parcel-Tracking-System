@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Staff Login · ParcelTrack{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center g-0 fade-up">
+  <div class="col-lg-9 col-xl-8">
+    <div class="row g-0 card card-elevated overflow-hidden">
+      <!-- Brand aside -->
+      <div class="col-md-5 d-none d-md-block">
+        <div class="auth-aside h-100" style="border-radius:0;">
+          <span class="brand-mark mb-3"><i class="bi bi-box-seam-fill"></i></span>
+          <h4 class="brand-font mb-2">ParcelTrack Ops</h4>
+          <p class="small mb-4" style="color:rgba(255,255,255,.8)">Manage shipments and keep every parcel moving.</p>
+          <div class="feat"><i class="bi bi-check-circle-fill"></i><div class="small">Create shipments with auto tracking numbers</div></div>
+          <div class="feat"><i class="bi bi-check-circle-fill"></i><div class="small">Log scan events to build live timelines</div></div>
+          <div class="feat"><i class="bi bi-check-circle-fill"></i><div class="small">Monitor volumes on the dashboard</div></div>
+        </div>
+      </div>
+      <!-- Form -->
+      <div class="col-md-7">
+        <div class="p-4 p-md-5">
+          <h4 class="brand-font mb-1">Welcome back</h4>
+          <p class="text-soft small mb-4">Sign in to the staff dashboard.</p>
+          <form method="post">
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                <input type="text" name="username" class="form-control" required autofocus>
+              </div>
+            </div>
+            <div class="mb-4">
+              <label class="form-label">Password</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white"><i class="bi bi-key"></i></span>
+                <input type="password" name="password" class="form-control" required>
+              </div>
+            </div>
+            <button class="btn btn-brand w-100 py-2" type="submit">
+              <i class="bi bi-box-arrow-in-right"></i> Sign in
+            </button>
+          </form>
+          <div class="mt-4 p-3 rounded-3" style="background:var(--bg-soft);">
+            <div class="small fw-semibold mb-1"><i class="bi bi-stars text-brand"></i> Demo accounts</div>
+            <div class="small text-soft"><code>admin</code> / <code>admin123</code> &nbsp;·&nbsp;
+              <code>dispatch</code> / <code>dispatch123</code></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
