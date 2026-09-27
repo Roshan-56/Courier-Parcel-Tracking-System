@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📦 Courier & Parcel Tracking System
 
 A simple courier/parcel tracking web app built with **Flask + SQLite (SQLAlchemy)**.
@@ -114,3 +115,6 @@ python app.py
 ```
 
 Then open <http://127.0.0.1:5000>.
+=======
+# Courier-Parcel-Tracking-System
+>>>>>>> 767bb386e7d1acc910f2b67efe3aa1ecbdd3877a
