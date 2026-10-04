@@ -262,3 +262,10 @@ app = create_app()
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+@app.route("/google3ad1add5de92ec50.html")
+def google_site_verification():
+    return (
+        "google-site-verification: google3ad1add5de92ec50.html",
+        200,
+        {"Content-Type": "text/html; charset=utf-8"},
+    )
